@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <locale.h>
+#include <iostream>
+using namespace std;
 
 struct list
 {
@@ -8,7 +10,7 @@ struct list
    list(int _elem = 0, list *_next = NULL) : elem(_elem), next(_next) {}
 } *l = new list;
 
-int input(list *t)
+bool inputFile(list *t)
 {
    bool IsOk = true;
    FILE *f = NULL;
@@ -18,7 +20,7 @@ int input(list *t)
       fseek(f, 0, SEEK_END);
       if (!ftell(f))
       {
-         printf("Файл in.txt пустой.");
+         printf("Файл in.txt пустой.\n");
          IsOk = false;
       }
       else
@@ -26,25 +28,54 @@ int input(list *t)
          fseek(f, 0, SEEK_SET);
          for (list *p = t->next = new list; !feof(f) && IsOk; p = p->next = new list)
              IsOk = fscanf(f, "%d", &p->elem);
-             
+
          if (!IsOk)
-            printf("Файл содержит недопустимые данные.");
+            printf("Файл содержит недопустимые данные.\n");
       }
    }
    else
    {
-      printf("Файл in.txt не найден.");
+      printf("Файл in.txt не найден.\n");
       IsOk = false;
    }
    return IsOk;
 }
 
-void reverse(list *h, FILE *f)
+bool inputConsole(list *t) {
+   scanf("%*c");
+   printf("Введите последовательность чисел: ");
+   bool IsOk = true;
+
+   for (list *p = t->next = new list; IsOk; ) {
+      IsOk = scanf("%d", &p->elem);
+      p = p->next = new list;
+
+      if (getchar() == '\n') 
+         break;
+   }
+
+   if (!IsOk)
+      printf("Введены некорректные данные.\n");
+
+   return IsOk;
+}
+
+void reverseToConsole(list *h)
 {
    list *p = h->next;
    if (p->next)
    {
-      reverse(p, f);
+      reverseToConsole(p);
+      printf("%d ", p->elem);
+   }
+}
+
+    void reverseToFile(list *h, FILE *f)
+{
+   list *p = h->next;
+   if (p->next)
+   {
+      reverseToFile(p, f);
       fprintf(f, "%d ", p->elem);
    }
 }
@@ -52,14 +83,61 @@ void reverse(list *h, FILE *f)
 int main()
 {
    setlocale(0, "");
+   int inputMethod = 0;
 
-   if (input(l))
+   do
    {
-      FILE *f = NULL;
-      f = fopen("out.txt", "w");
+      printf("Выберите способ ввода последовательности чисел:\n");
+      printf("1. Данные из файла \"in.txt\".\n");
+      printf("2. Ввести вручную.\n");
+      printf("Ваш выбор: ");
 
-      reverse(l, f);
-      fclose(f);
+      if (scanf("%d", &inputMethod) != 1 || (inputMethod != 1 && inputMethod != 2))
+      {
+         printf("Некорректный выбор способа ввода данных.\n\n");
+         while (getchar() != '\n');
+      }
+   } while (inputMethod != 1 && inputMethod != 2);
+   
+   bool isCorrect;
+   
+   if (inputMethod == 1)
+      isCorrect = inputFile(l);
+   else if (inputMethod == 2)
+      isCorrect = inputConsole(l);
+
+   if (isCorrect)
+   {
+      int outputMethod;
+
+      do
+      {
+         printf("Выберите способ вывода результата:\n");
+         printf("1. Вывести в файл \"out.txt\".\n");
+         printf("2. Вывести в консоль.\n");
+         printf("Ваш выбор: ");
+
+         if (scanf("%d", &outputMethod) != 1 || (outputMethod != 1 && outputMethod != 2))
+         {
+            printf("Некорректный выбор способа ввода данных.\n\n");
+            while (getchar() != '\n');
+         }
+      } while (inputMethod != 1 && inputMethod != 2);
+
+      if (outputMethod == 1) 
+      {
+         FILE *f = NULL;
+         f = fopen("out.txt", "w");
+
+         reverseToFile(l, f);
+         fclose(f);
+      }
+      else if (outputMethod == 2)
+      {
+         printf("Последовательность в обратном порядке: ");
+         reverseToConsole(l);
+         printf("\n");
+      }
    }
    return 0;
 }
