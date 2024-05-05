@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <locale.h>
+#include <fstream>
+#include <string>
 #include <iostream>
 using namespace std;
 
@@ -80,6 +82,17 @@ void reverseToConsole(list *h)
    }
 }
 
+void printManual()
+{
+   ifstream file("manual.txt");
+   string line;
+
+   while (getline(file, line))
+      cout << line << endl;
+
+   file.close();
+}
+
 int main()
 {
    setlocale(0, "");
@@ -90,21 +103,29 @@ int main()
       printf("Выберите способ ввода последовательности чисел:\n");
       printf("1. Данные из файла \"in.txt\".\n");
       printf("2. Ввести вручную.\n");
+      printf("3. Справка.\n");
       printf("Ваш выбор: ");
 
-      if (scanf("%d", &inputMethod) != 1 || (inputMethod != 1 && inputMethod != 2))
+      if (scanf("%d", &inputMethod) != 1 || (inputMethod != 1 && inputMethod != 2 && inputMethod != 3))
       {
          printf("Некорректный выбор способа ввода данных.\n\n");
          while (getchar() != '\n');
       }
-   } while (inputMethod != 1 && inputMethod != 2);
-   
+   } while (inputMethod != 1 && inputMethod != 2 && inputMethod != 3);
+
    bool isCorrect;
    
    if (inputMethod == 1)
       isCorrect = inputFile(l);
    else if (inputMethod == 2)
       isCorrect = inputConsole(l);
+   else
+   {
+      printf("\n");
+      printManual();
+      printf("\n");
+      return 0;
+   }   
 
    if (isCorrect)
    {
@@ -122,7 +143,7 @@ int main()
             printf("Некорректный выбор способа ввода данных.\n\n");
             while (getchar() != '\n');
          }
-      } while (inputMethod != 1 && inputMethod != 2);
+      } while (outputMethod != 1 && outputMethod != 2);
 
       if (outputMethod == 1) 
       {
@@ -132,7 +153,7 @@ int main()
          reverseToFile(l, f);
          fclose(f);
       }
-      else if (outputMethod == 2)
+      else
       {
          printf("Последовательность в обратном порядке: ");
          reverseToConsole(l);
